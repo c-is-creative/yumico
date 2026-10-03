@@ -22,8 +22,12 @@ Put the image file in `assets/images/`. Add a `figure` inside that practice’s 
 
 Content is present directly in HTML and works without JavaScript. Markdown notes are human-editable reference files and do not automatically rebuild HTML.
 
-## GitHub Pages later
+## Publishing with GitHub Pages
 
-The folder uses relative paths, works under a repository subpath, and includes `.nojekyll`. The HTML pages currently include `noindex,nofollow` so this early prototype is not presented to search engines if uploaded during review. Before a public launch, review the writing, dates, credits, and contact choice; then remove those tags and set canonical/alternate URLs for the final domain.
+Live prototype: https://c-is-creative.github.io/yumico/
 
-No deployment or repository operation has been performed.
+Repository: https://github.com/c-is-creative/yumico
+
+GitHub Pages serves the root of the `main` branch. Pushing updates to `main` deploys them automatically. Relative paths and `.nojekyll` support hosting under the repository subpath without a build step.
+
+The prototype retains `noindex,nofollow` during editorial review. Anyone can visit or share the public site. Remove these tags when the content is ready for search engines.
