@@ -81,3 +81,11 @@ body{font-family:var(--serif)}
 @media(max-width:650px){.information-panel{inset:12px 12px 12px auto;width:calc(100vw - 24px);height:calc(100dvh - 24px);padding:26px 24px}}
 
 .photo-strip video{display:block;height:100%;width:auto;max-width:none;object-fit:contain;background:var(--sand);flex:none}
+
+/* Shared English labels, serif card headings, and a combined photo/video viewer. */
+.information>summary,.panel-close,.lightbox-close{font-family:var(--serif)}
+.information-card dt{font-family:var(--serif);font-weight:700}
+.photo-strip .video-link{height:100%;width:auto}
+.photo-strip video{height:100%;width:auto;object-fit:contain}
+.lightbox-video{min-height:0;flex:1;width:100%;max-width:100%;object-fit:contain;margin:20px auto}
+.lightbox [hidden]{display:none!important}

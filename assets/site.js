@@ -35,7 +35,7 @@
     s.el.querySelectorAll('video').forEach(video => video.addEventListener('loadedmetadata', () => updateStrip(s)));
     s.el.addEventListener('dragstart', event => event.preventDefault());
     s.el.addEventListener('pointerdown', event => {
-      if (!event.isPrimary || event.button !== 0 || s.max < 2 || event.target.closest('video')) return;
+      if (!event.isPrimary || event.button !== 0 || s.max < 2) return;
       s.velocity = 0; s.position = s.el.scrollLeft;
       s.drag = {id:event.pointerId, x:event.clientX, y:event.clientY,
         lastX:event.clientX, time:event.timeStamp, moved:false};
@@ -81,11 +81,26 @@
     s.el.closest('details.project')?.addEventListener('toggle', () => updateStrip(s));
     updateStrip(s);
   });
+  const galleryVideos = [...document.querySelectorAll('.photo-strip video')];
+  const videoVisibility = new IntersectionObserver(entries => {
+    entries.forEach(entry => { entry.target.dataset.inView = entry.isIntersecting ? '1' : '0'; });
+  }, {threshold:0.1});
+  galleryVideos.forEach(video => videoVisibility.observe(video));
+  function syncGalleryVideos() {
+    for (const video of galleryVideos) {
+      const shouldPlay = video.dataset.inView === '1' && !document.hidden && !document.querySelector('dialog[open]');
+      if (video.dataset.playing === String(shouldPlay)) continue;
+      video.dataset.playing = String(shouldPlay);
+      if (shouldPlay) { video.muted = true; video.play().catch(() => {}); }
+      else video.pause();
+    }
+  }
   let last = 0;
   function tick(now) {
+    syncGalleryVideos();
     const dt = Math.min((now - (last || now)) / 1000, 0.05); last = now;
     for (const s of strips) {
-      if (!s.visible || s.drag || s.max < 2 || document.hidden || document.querySelector('dialog[open]') || [...s.el.querySelectorAll('video')].some(video => !video.paused)) continue;
+      if (!s.visible || s.drag || s.max < 2 || document.hidden || document.querySelector('dialog[open]')) continue;
       if (Math.abs(s.velocity) > 8) {
         const nextPosition = s.position + s.velocity * dt;
         s.position = clamp(s, nextPosition); s.el.scrollLeft = s.position;
@@ -109,8 +124,7 @@
   // Native dialog supplies Escape, focus containment, and a floating right-hand card.
   const information = [...document.querySelectorAll('details.information')];
   if (information.length && typeof HTMLDialogElement !== 'undefined') {
-    const language = document.documentElement.lang;
-    const closeText = language === 'ja' ? '閉じる' : language === 'es' ? 'Cerrar' : 'Close';
+    const closeText = 'Close';
     const panel = document.createElement('dialog');
     panel.className = 'information-panel'; panel.setAttribute('aria-labelledby', 'information-panel-title');
     panel.innerHTML = `<div class="panel-toolbar"><h2 id="information-panel-title"></h2><button type="button" class="panel-close">${closeText} <span aria-hidden="true">×</span></button></div><div class="panel-content"></div>`;
@@ -142,35 +156,49 @@
   }
   const dialog = document.querySelector('.lightbox');
   if (!dialog || typeof dialog.showModal !== 'function') return;
-  let images = [], index = 0, opener = null;
+  let media = [], index = 0, opener = null;
   const img = dialog.querySelector('.lightbox-image');
+  const video = document.createElement('video');
+  video.className = 'lightbox-video'; video.controls = true;
+  video.muted = true; video.defaultMuted = true; video.loop = true; video.playsInline = true;
+  video.hidden = true; img.after(video);
   const prev = dialog.querySelector('.lightbox-prev');
   const next = dialog.querySelector('.lightbox-next');
   function show() {
-    const a = images[index];
-    img.src = a.href;
-    img.alt = a.querySelector('img').alt;
-    dialog.querySelector('.lightbox-caption').textContent = img.alt;
-    dialog.querySelector('.lightbox-count').textContent = `${String(index + 1).padStart(2, '0')} / ${String(images.length).padStart(2, '0')}`;
+    const a = media[index];
+    const isVideo = a.hasAttribute('data-lightbox-video');
+    video.pause(); video.removeAttribute('src'); video.load();
+    img.hidden = isVideo; video.hidden = !isVideo;
+    const label = isVideo ? a.getAttribute('aria-label') : a.querySelector('img').alt;
+    if (isVideo) {
+      img.removeAttribute('src'); video.src = a.href;
+      video.poster = a.querySelector('video').poster;
+      video.setAttribute('aria-label', label); video.muted = true;
+      video.play().catch(() => {});
+    } else { img.src = a.href; img.alt = label; }
+    dialog.querySelector('.lightbox-caption').textContent = label;
+    dialog.querySelector('.lightbox-count').textContent = `${String(index + 1).padStart(2, '0')} / ${String(media.length).padStart(2, '0')}`;
     prev.disabled = index === 0;
-    next.disabled = index === images.length - 1;
+    next.disabled = index === media.length - 1;
   }
   document.addEventListener('click', event => {
-    const link = event.target.closest('a[data-lightbox]');
+    const link = event.target.closest('a[data-lightbox],a[data-lightbox-video]');
     if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    event.preventDefault();
-    opener = link;
+    event.preventDefault(); opener = link;
     const group = link.closest('[data-gallery]') || link.parentElement;
-    images = [...group.querySelectorAll('[data-lightbox]')];
-    index = images.indexOf(link);
-    show(); dialog.showModal(); dialog.querySelector('.lightbox-close').focus();
+    media = [...group.querySelectorAll('[data-lightbox],[data-lightbox-video]')];
+    index = media.indexOf(link);
+    dialog.showModal(); show(); syncGalleryVideos(); dialog.querySelector('.lightbox-close').focus();
   });
   dialog.querySelector('.lightbox-close').addEventListener('click', () => dialog.close());
   prev.addEventListener('click', () => { if (index > 0) { index--; show(); } });
-  next.addEventListener('click', () => { if (index < images.length - 1) { index++; show(); } });
+  next.addEventListener('click', () => { if (index < media.length - 1) { index++; show(); } });
   dialog.addEventListener('keydown', event => {
     if (event.key === 'ArrowLeft') { event.preventDefault(); prev.click(); }
     if (event.key === 'ArrowRight') { event.preventDefault(); next.click(); }
   });
-  dialog.addEventListener('close', () => { img.removeAttribute('src'); opener?.focus(); });
+  dialog.addEventListener('close', () => {
+    img.removeAttribute('src'); video.pause(); video.removeAttribute('src'); video.load();
+    opener?.focus(); syncGalleryVideos();
+  });
 })();
