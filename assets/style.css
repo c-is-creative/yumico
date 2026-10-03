@@ -63,3 +63,19 @@ body{font-family:var(--serif)}
 .project-body>.information>summary{top:52px;right:0}
 @media(max-width:650px){.project-body{padding-top:10px}.project-body>.information>summary{top:46px}}
 .information-card dt{font-size:.75rem}
+
+/* Direct manipulation and floating project information. */
+.photo-strip{touch-action:pan-y pinch-zoom;cursor:grab;user-select:none;-webkit-user-select:none}
+.photo-strip .image-link{cursor:grab;-webkit-user-drag:none}
+.photo-strip img{-webkit-user-drag:none}
+.photo-strip.is-dragging,.photo-strip.is-dragging .image-link{cursor:grabbing}
+.information-panel{position:fixed;inset:20px 20px 20px auto;margin:0;width:min(560px,calc(100vw - 40px));height:calc(100dvh - 40px);max-width:none;max-height:none;border:1px solid var(--rule);border-radius:3px;background:var(--sand);color:var(--ink);padding:30px 34px;box-shadow:-12px 8px 45px #34312e16;overflow-y:auto;transform:translateX(calc(100% + 30px));opacity:0;transition:transform .24s ease,opacity .24s ease}
+.information-panel.is-visible{transform:translateX(0);opacity:1}
+.information-panel::backdrop{background:#34312e18}
+.panel-toolbar{display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding-bottom:28px}
+.panel-toolbar h2{font-size:1.3rem;overflow-wrap:anywhere}
+.panel-close{font-family:var(--sans);font-size:.75rem;white-space:nowrap;padding:8px 0}
+.panel-close span{font-size:1.2rem;margin-left:12px}
+.information-panel .information-card{padding:0;margin:0;background:none}
+.information-panel .information-card dl{grid-template-columns:1fr;gap:30px}
+@media(max-width:650px){.information-panel{inset:12px 12px 12px auto;width:calc(100vw - 24px);height:calc(100dvh - 24px);padding:26px 24px}}
