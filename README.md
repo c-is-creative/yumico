@@ -9,6 +9,7 @@ An editable, local static website in HTML, CSS, vanilla JavaScript, and Markdown
 - `assets/style.css`: typography, off-white palette, spacing, responsive layouts, photo strips, and information cards.
 - `assets/site.js`: slow photo movement where a strip overflows, language anchors, and the keyboard-accessible image viewer.
 - `assets/images/`: image derivatives extracted from the supplied CV PDF. Filenames retain page and asset references. The PDF itself is not included.
+- `assets/videos/`: browser-compatible MP4 videos with audio tracks removed, played on request.
 - `assets/fonts/`: locally hosted Libre Baskerville with its license.
 - `docs/`: editable multilingual notes and editorial questions.
 

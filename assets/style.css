@@ -79,3 +79,5 @@ body{font-family:var(--serif)}
 .information-panel .information-card{padding:0;margin:0;background:none}
 .information-panel .information-card dl{grid-template-columns:1fr;gap:30px}
 @media(max-width:650px){.information-panel{inset:12px 12px 12px auto;width:calc(100vw - 24px);height:calc(100dvh - 24px);padding:26px 24px}}
+
+.photo-strip video{display:block;height:100%;width:auto;max-width:none;object-fit:contain;background:var(--sand);flex:none}

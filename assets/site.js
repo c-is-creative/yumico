@@ -32,9 +32,10 @@
     visibility.observe(s.el);
     new ResizeObserver(() => updateStrip(s)).observe(s.el);
     s.el.querySelectorAll('img').forEach(img => img.addEventListener('load', () => updateStrip(s)));
+    s.el.querySelectorAll('video').forEach(video => video.addEventListener('loadedmetadata', () => updateStrip(s)));
     s.el.addEventListener('dragstart', event => event.preventDefault());
     s.el.addEventListener('pointerdown', event => {
-      if (!event.isPrimary || event.button !== 0 || s.max < 2) return;
+      if (!event.isPrimary || event.button !== 0 || s.max < 2 || event.target.closest('video')) return;
       s.velocity = 0; s.position = s.el.scrollLeft;
       s.drag = {id:event.pointerId, x:event.clientX, y:event.clientY,
         lastX:event.clientX, time:event.timeStamp, moved:false};
@@ -84,7 +85,7 @@
   function tick(now) {
     const dt = Math.min((now - (last || now)) / 1000, 0.05); last = now;
     for (const s of strips) {
-      if (!s.visible || s.drag || s.max < 2 || document.hidden || document.querySelector('dialog[open]')) continue;
+      if (!s.visible || s.drag || s.max < 2 || document.hidden || document.querySelector('dialog[open]') || [...s.el.querySelectorAll('video')].some(video => !video.paused)) continue;
       if (Math.abs(s.velocity) > 8) {
         const nextPosition = s.position + s.velocity * dt;
         s.position = clamp(s, nextPosition); s.el.scrollLeft = s.position;
